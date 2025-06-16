@@ -10,16 +10,18 @@ import com.zerobase.fastlms.member.model.ResetPasswordInput;
 import com.zerobase.fastlms.member.service.MemberService;
 import com.zerobase.fastlms.util.PasswordUtils;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
 import java.security.Principal;
 import java.util.List;
 
+@Slf4j
 @RequiredArgsConstructor
 @Controller
 public class MemberController {
@@ -53,15 +55,33 @@ public class MemberController {
         
         return "member/register";
     }
-    
+
     @PostMapping("/member/register")
-    public String registerSubmit(Model model, HttpServletRequest request
-            , MemberInput parameter) {
-        
-        boolean result = memberService.register(parameter);
-        model.addAttribute("result", result);
-        
-        return "member/register_complete";
+    public String registerSubmit(Model model, HttpServletRequest request, MemberInput parameter) {
+
+        log.info("회원가입 시도: {}", parameter.getUserId());
+
+        try {
+            boolean result = memberService.register(parameter);
+
+            if (result) {
+                log.info("회원가입 성공: {}", parameter.getUserId());
+                model.addAttribute("result", true);
+                model.addAttribute("message", "회원가입이 완료되었습니다. 이메일을 확인하여 가입을 완료해주세요.");
+                return "member/register_complete";
+            } else {
+                log.warn("회원가입 실패 - 중복 아이디: {}", parameter.getUserId());
+                model.addAttribute("result", false);
+                model.addAttribute("message", "이미 사용 중인 아이디입니다.");
+                return "member/register";
+            }
+
+        } catch (Exception e) {
+            log.error("회원가입 중 오류 발생: {}", e.getMessage(), e);
+            model.addAttribute("result", false);
+            model.addAttribute("message", "회원가입 중 오류가 발생했습니다. 다시 시도해주세요.");
+            return "member/register";
+        }
     }
     
     // http://www.naver.com/news/list.do?id=123&key=124&text=쿼리

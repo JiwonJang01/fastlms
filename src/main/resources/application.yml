@@ -1,16 +1,21 @@
 spring:
+  main:
+    allow-circular-references: true  # 순환 참조 허용 (임시 해결)
   datasource:
-    url: jdbc:mariadb://localhost:3306/minicampus
-    driver-class-name: org.mariadb.jdbc.Driver
-    username: minicampus_user
-    password: a1234
+    url: jdbc:mysql://localhost:3307/minicampus?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Seoul
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    username: root
+    password: rootpassword
   
   jpa:
     generate-ddl: true
     hibernate:
       ddl-auto: update
-    show-sql: true
-    
+    show-sql: false  # 로깅 비활성화
+    properties:
+      hibernate:
+        format_sql: false  # 로깅 비활성화
+
   mail:
     host: smtp.gmail.com
     port: 587
@@ -21,14 +26,18 @@ spring:
         smtp:
           starttls:
             enable: true
-            
-logging:
-  level:
-    root: info
-    
-mybatis:
-  mapper-locations: mybatis/**/*.xml
-  configuration:
-    map-underscore-to-camel-case: true
-    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
 
+  thymeleaf:
+    cache: false
+
+  server:
+    port: 8080
+
+  logging:
+    level:
+      root: warn  # warn 레벨로 최소화
+
+  mybatis:
+    mapper-locations: mybatis/**/*.xml
+    configuration:
+      map-underscore-to-camel-case: true

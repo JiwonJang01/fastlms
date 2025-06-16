@@ -28,21 +28,20 @@
                 </otherwise>
             </choose>
         </if>
-
     </sql>
 
     <select id="selectListCount" resultType="long">
         select count(*)
         from member
         where 1 = 1
-            <include refid="selectListWhere"/>
+        <include refid="selectListWhere"/>
     </select>
 
     <select id="selectList" resultType="com.zerobase.fastlms.admin.dto.MemberDto">
         select *
         from member
         where 1 = 1
-            <include refid="selectListWhere"/>
+        <include refid="selectListWhere"/>
 
         limit #{pageStart}, #{pageEnd}
     </select>
