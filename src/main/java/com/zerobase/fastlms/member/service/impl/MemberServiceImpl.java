@@ -12,6 +12,7 @@ import com.zerobase.fastlms.member.exception.MemberStopUserException;
 import com.zerobase.fastlms.member.model.MemberInput;
 import com.zerobase.fastlms.member.model.ResetPasswordInput;
 import com.zerobase.fastlms.member.repository.MemberRepository;
+import com.zerobase.fastlms.member.service.LoginHistoryService;
 import com.zerobase.fastlms.member.service.MemberService;
 import com.zerobase.fastlms.util.PasswordUtils;
 import lombok.RequiredArgsConstructor;
@@ -37,7 +38,9 @@ public class MemberServiceImpl implements MemberService {
     private final MemberRepository memberRepository;
     private final MailComponents mailComponents;
     private final MemberMapper memberMapper;
-    private final PasswordEncoder passwordEncoder; // 주입받음
+    private final PasswordEncoder passwordEncoder;
+    private final LoginHistoryService loginHistoryService;
+
 
     /**
      * 회원 가입
@@ -107,11 +110,24 @@ public class MemberServiceImpl implements MemberService {
     public List<MemberDto> list(MemberParam parameter) {
         long totalCount = memberMapper.selectListCount(parameter);
         List<MemberDto> list = memberMapper.selectList(parameter);
+
         if (!CollectionUtils.isEmpty(list)) {
             int i = 0;
             for(MemberDto x : list) {
                 x.setTotalCount(totalCount);
                 x.setSeq(totalCount - parameter.getPageStart() - i);
+
+                // 마지막 로그인 정보 조회 (LoginHistoryService가 주입되어 있다면)
+                try {
+                    if (loginHistoryService != null) {
+                        LocalDateTime lastLoginDt = loginHistoryService.getLastLoginDate(x.getUserId());
+                        x.setLastLoginDt(lastLoginDt);
+                    }
+                } catch (Exception e) {
+                    // 로그인 히스토리 조회 실패 시 무시 (기존 기능에 영향 없음)
+                    System.out.println("로그인 히스토리 조회 실패: " + x.getUserId());
+                }
+
                 i++;
             }
         }

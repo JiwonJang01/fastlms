@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>관리자 화면 - 배너 관리</title>
+    <style>
+        .list table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .list table th, .list table td {
+            border: solid 1px #000;
+            padding: 8px;
+            text-align: center;
+        }
+        .list table th {
+            background-color: #f2f2f2;
+        }
+
+        .banner-image {
+            max-width: 100px;
+            max-height: 60px;
+            object-fit: cover;
+        }
+
+        .banner-name {
+            text-align: left;
+            max-width: 200px;
+            word-break: break-all;
+        }
+
+        .action-buttons {
+            margin: 20px 0;
+        }
+
+        .action-buttons button {
+            margin-right: 10px;
+            padding: 8px 16px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+
+        .action-buttons button:hover {
+            background-color: #0056b3;
+        }
+
+        .delete-btn {
+            background-color: #dc3545 !important;
+        }
+
+        .delete-btn:hover {
+            background-color: #c82333 !important;
+        }
+    </style>
+    <script>
+        function selectAll(selectAll) {
+            const checkboxes = document.getElementsByName('idList');
+            checkboxes.forEach((checkbox) => {
+                checkbox.checked = selectAll.checked;
+            });
+        }
+
+        function deleteSelected() {
+            const checkboxes = document.querySelectorAll('input[name="idList"]:checked');
+            if (checkboxes.length === 0) {
+                alert('삭제할 배너를 선택해주세요.');
+                return;
+            }
+
+            if (confirm('선택한 배너를 삭제하시겠습니까?')) {
+                const form = document.getElementById('deleteForm');
+                const ids = Array.from(checkboxes).map(cb => cb.value).join(',');
+                document.getElementById('deleteIds').value = ids;
+                form.submit();
+            }
+        }
+    </script>
+</head>
+<body>
+<div th:replace="/fragments/layout.html :: fragment-admin-body-menu"></div>
+
+<h1>배너 관리</h1>
+
+<div class="list">
+    <div class="action-buttons">
+        <button type="button" onclick="location.href='add.do'">배너 등록</button>
+        <button type="button" class="delete-btn" onclick="deleteSelected()">선택 삭제</button>
+    </div>
+
+    <table>
+        <thead>
+        <tr>
+            <th>
+                <input type="checkbox" onclick="selectAll(this)">
+            </th>
+            <th>NO</th>
+            <th>배너명</th>
+            <th>이미지</th>
+            <th>링크 주소</th>
+            <th>오픈 방법</th>
+            <th>정렬 순서</th>
+            <th>공개 여부</th>
+            <th>등록일</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="banner, iterStat : ${list}">
+            <td>
+                <input type="checkbox" name="idList" th:value="${banner.id}">
+            </td>
+            <td th:text="${iterStat.index + 1}">1</td>
+            <td class="banner-name">
+                <a th:href="|edit.do?id=${banner.id}|" th:text="${banner.bannerName}">
+                    메인배너1
+                </a>
+            </td>
+            <td>
+                <img th:if="${banner.bannerUrlPath != null}"
+                     th:src="${banner.bannerUrlPath}"
+                     th:alt="${banner.bannerAltText}"
+                     class="banner-image">
+                <span th:unless="${banner.bannerUrlPath != null}">이미지 없음</span>
+            </td>
+            <td>
+                <a th:if="${banner.bannerUrl != null}"
+                   th:href="${banner.bannerUrl}"
+                   th:text="${banner.bannerUrl}"
+                   target="_blank">
+                </a>
+                <span th:unless="${banner.bannerUrl != null}">링크 없음</span>
+            </td>
+            <td th:text="${banner.bannerTargetText}">새창</td>
+            <td th:text="${banner.sortOrder}">1</td>
+            <td th:text="${banner.displayYnText}">공개</td>
+            <td th:text="${banner.regDtText}">2021.01.01</td>
+        </tr>
+
+        <!-- 데이터가 없을 때 -->
+        <tr th:if="${#lists.isEmpty(list)}">
+            <td colspan="9">등록된 배너가 없습니다.</td>
+        </tr>
+        </tbody>
+    </table>
+</div>
+
+<!-- 삭제용 숨겨진 폼 -->
+<form id="deleteForm" method="post" action="delete.do" style="display: none;">
+    <input type="hidden" id="deleteIds" name="idList">
+</form>
+
+</body>
+</html>

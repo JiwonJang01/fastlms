@@ -30,14 +30,25 @@ spring:
   thymeleaf:
     cache: false
 
-  server:
-    port: 8080
+  # 파일 업로드 설정
+  servlet:
+    multipart:
+      max-file-size: 20MB
+      max-request-size: 25MB
 
-  logging:
-    level:
-      root: warn  # warn 레벨로 최소화
+server:
+  port: 8080
 
-  mybatis:
-    mapper-locations: mybatis/**/*.xml
-    configuration:
-      map-underscore-to-camel-case: true
+logging:
+  level:
+    root: warn  # warn 레벨로 최소화
+
+mybatis:
+  mapper-locations: mybatis/**/*.xml
+  configuration:
+    map-underscore-to-camel-case: true
+
+# 파일 업로드 경로 설정 (커스텀 프로퍼티)
+file:
+  upload:
+    path: ${user.home}/fastlms/files/

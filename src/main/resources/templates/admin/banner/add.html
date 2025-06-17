@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title th:text="${editMode ? '배너 관리 - 배너 수정' : '배너 관리 - 배너 등록'}">관리자 화면 - 배너 관리</title>
+    <style>
+        .detail table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+        .detail table th, .detail table td {
+            border: solid 1px #000;
+            padding: 12px;
+        }
+        .detail table th {
+            background-color: #f2f2f2;
+            width: 150px;
+            text-align: left;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            box-sizing: border-box;
+        }
+
+        .form-select {
+            padding: 8px;
+            border: 1px solid #ddd;
+        }
+
+        .form-checkbox {
+            margin-right: 8px;
+        }
+
+        .current-image {
+            max-width: 200px;
+            max-height: 120px;
+            margin-top: 10px;
+            border: 1px solid #ddd;
+        }
+
+        .button-group {
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .button-group button, .button-group a {
+            margin: 0 10px;
+            padding: 10px 20px;
+            text-decoration: none;
+            border: none;
+            cursor: pointer;
+        }
+
+        .btn-primary {
+            background-color: #007bff;
+            color: white;
+        }
+
+        .btn-secondary {
+            background-color: #6c757d;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background-color: #0056b3;
+        }
+
+        .btn-secondary:hover {
+            background-color: #545b62;
+        }
+    </style>
+    <script>
+        function validateForm() {
+            const bannerName = document.querySelector('input[name="bannerName"]').value;
+            const sortOrder = document.querySelector('input[name="sortOrder"]').value;
+            const file = document.querySelector('input[name="file"]').files[0];
+            const editMode = document.querySelector('input[name="id"]').value;
+
+            if (!bannerName.trim()) {
+                alert('배너명을 입력해주세요.');
+                return false;
+            }
+
+            if (!sortOrder.trim()) {
+                alert('정렬 순서를 입력해주세요.');
+                return false;
+            }
+
+            if (isNaN(sortOrder) || parseInt(sortOrder) < 1) {
+                alert('정렬 순서는 1 이상의 숫자를 입력해주세요.');
+                return false;
+            }
+
+            // 신규 등록 시 파일은 필수
+            if (!editMode && !file) {
+                alert('배너 이미지를 선택해주세요.');
+                return false;
+            }
+
+            return true;
+        }
+    </script>
+</head>
+<body>
+<div th:replace="/fragments/layout.html :: fragment-admin-body-menu"></div>
+
+<h1 th:text="${editMode ? '배너 관리 - 배너 수정' : '배너 관리 - 배너 등록'}">배너 관리 - 배너 등록</h1>
+
+<div class="detail">
+    <form method="post" enctype="multipart/form-data" onsubmit="return validateForm()">
+        <input type="hidden" name="id" th:value="${detail.id}">
+
+        <table>
+            <tbody>
+            <tr>
+                <th>배너명 *</th>
+                <td>
+                    <input type="text" name="bannerName" class="form-input"
+                           th:value="${detail.bannerName}"
+                           placeholder="배너명을 입력하세요">
+                </td>
+            </tr>
+            <tr>
+                <th>배너 파일</th>
+                <td>
+                    <input type="file" name="file" accept="image/*">
+                    <div th:if="${editMode and detail.bannerUrlPath != null}">
+                        <p>현재 이미지:</p>
+                        <img th:src="${detail.bannerUrlPath}"
+                             th:alt="${detail.bannerAltText}"
+                             class="current-image">
+                        <p><small>새 파일을 선택하지 않으면 기존 이미지가 유지됩니다.</small></p>
+                    </div>
+                </td>
+            </tr>
+            <tr>
+                <th>대체 텍스트</th>
+                <td>
+                    <input type="text" name="bannerAltText" class="form-input"
+                           th:value="${detail.bannerAltText}"
+                           placeholder="이미지 대체 텍스트를 입력하세요">
+                </td>
+            </tr>
+            <tr>
+                <th>링크 주소</th>
+                <td>
+                    <input type="url" name="bannerUrl" class="form-input"
+                           th:value="${detail.bannerUrl}"
+                           placeholder="https://example.com">
+                </td>
+            </tr>
+            <tr>
+                <th>오픈 방법</th>
+                <td>
+                    <select name="bannerTarget" class="form-select">
+                        <option value="_self" th:selected="${detail.bannerTarget == '_self'}">현재 창</option>
+                        <option value="_blank" th:selected="${detail.bannerTarget == '_blank'}">새 창</option>
+                    </select>
+                </td>
+            </tr>
+            <tr>
+                <th>정렬 순서 *</th>
+                <td>
+                    <input type="number" name="sortOrder" class="form-input"
+                           th:value="${detail.sortOrder}"
+                           min="1" placeholder="정렬 순서 입력">
+                    <small>낮은 숫자일수록 먼저 표시됩니다.</small>
+                </td>
+            </tr>
+            <tr>
+                <th>공개 여부</th>
+                <td>
+                    <label>
+                        <input type="checkbox" name="displayYn" class="form-checkbox"
+                               th:checked="${detail.displayYn}">
+                        공개
+                    </label>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+
+        <div class="button-group">
+            <button type="submit" class="btn-primary"
+                    th:text="${editMode ? '배너 수정' : '배너 등록'}">배너 등록</button>
+            <a href="list.do" class="btn-secondary">목록</a>
+        </div>
+    </form>
+</div>
+
+</body>
+</html>
